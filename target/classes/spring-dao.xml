@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--导入数据哭配置文件-->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <!--配置数据源，数据库连接池:这是Spring内置的dbcp数据库连接池-->
+    <bean class="org.springframework.jdbc.datasource.DriverManagerDataSource" id="dataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!--配置SqlSessionFactoryBean-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+        <!--导入数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--关联Mybatis核心配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!--方法三：这个直接帮我们注入了sqlSessionFactory，不需要再编写实现类手动注入了-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 注入sqlSessionFactory -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 给出需要扫描Dao(mapper)接口包,接口存在的包 -->
+        <property name="basePackage" value="com.dxw.mapper"/>
+    </bean>
+
+    <!--方法一：
+        dao层实现类继承SqlSessionDaoSupport的方式,这个方法可以不配置SqlSessionTemplate的bean，
+        直接配置实现类的bean，把sqlSessionFactory注入即可
+    方法二：
+        dao层实现类不继承SqlSessionDaoSupport,需要配置SqlSessionTemplate的bean
+        并将SqlSessionTemplate的bean注入到实现类中
+    方法三：
+        编写配置，Spring内置了帮助我们完成上面步骤的功能，我们只需要配置即可
+    -->
+    <!--方法一-->
+    <!--<bean class="com.dxw.mapper.UserMapperImpl" id="userMapperImpl">-->
+    <!--    <property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+    <!--</bean>-->
+
+    <!--方法二-->
+    <!--配置SqlSessionTemplate-->
+    <!--<bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSessionTemplate">-->
+    <!--    <constructor-arg ref="sqlSessionFactory"/>-->
+    <!--</bean>-->
+    <!--<bean class="com.dxw.mapper.UserMapperImpl" id="userMapperImpl">-->
+    <!--    <property name="sqlSessionTemplate" ref="sqlSessionTemplate"/>-->
+    <!--</bean>-->
+</beans>
